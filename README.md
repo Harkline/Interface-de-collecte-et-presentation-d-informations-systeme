@@ -13,10 +13,13 @@ Agent:
 - [x] Formater les données envoyé de l'agent au serveur
 
 Serveur:
-
-- [ ] Interface http pour la collecte des données transmises par les agents
-- [ ] Stockage des données dans une BD
-- [ ] Interface de consultation des résultats
+- [x] Récupération des informations transmisses par l'agent sur un port dans un serveur python
+- [ ] Vérification de l'existence de toutes les informations nécèssaires (aucune null)
+- [ ] Vérifier l'éxistence de la BDD sinon la créer et préparer les tables 
+- [ ] Insertion des informations reçus des agents dans la BDD (mysqli)
+- [x] Creation d'une redirection vers une page web sur un port spécifique avec l'implémentation du JS (google charts)  
+- [ ] [OPTIONNEL] Gèrer les do_GET pour ajouter quelques fonctionnalitée (supprimer BDD,fermer le site http, voir autres...)
+- [ ] Mise en forme de la page web présentent les informations sur les clients
 - [ ] [OPTIONNEL] Ajouter le choix de l'hôte sur l'interface graphique
 
 Documentation:

@@ -1,6 +1,6 @@
 #coding utf-8
 
-import platform,socket,psutil,requests
+import platform,socket,psutil,requests,json,csv,os
 
 # writing a function to convert bytes to GigaByte
 def bytes_to_GB(bytes):
@@ -71,6 +71,7 @@ for index, item in enumerate(cpuinfo):
 
 informationDisque = []
 partitionsDisque = psutil.disk_partitions()
+compteur = 0 #Compteur pour différencier les partitions
 #print(partitionsDisque)
 
 #Permet d'afficher pour chaque partition les infos qu'on veut
@@ -81,7 +82,9 @@ for partition in partitionsDisque:
     #bufferInfoPartition['cheminDevice']=partition.device
     #bufferInfoPartition['pointDeMontage']=partition.mountpoint
     #bufferInfoPartition['systemeFichier']=partition.fstype
-    bufferInfoPartition['usagePartition']=psutil.disk_usage(partition.mountpoint)
+    compteur += 1
+    usagePartitionStr = "usagePartition" + str(compteur) #Permet de différencier les partitions à l'aide d'un simple compteur
+    bufferInfoPartition[usagePartitionStr]=psutil.disk_usage(partition.mountpoint)
     informationDisque.append(bufferInfoPartition)
 
 info['informationsPartitions'] = informationDisque #Les informations des partitions (ATTENTION : PB potentiel pour OLIMALT pour gérer mes informations
@@ -99,7 +102,21 @@ info['memoireOccupée']=virtual_memory.used
 info['memoireBuffer'] =virtual_memory.buffers #7 buffers, 8 cache (mémoire) EN BYTES PENSER A CONVERTIR
 info['memoireCache'] =virtual_memory.cached
 
+######CSV reader
+#https://www.commentcamarche.net/faq/2382-python-lire-et-ecrire-des-fichiers-csv
+cr = csv.reader(open("config.csv","r"))
+for row in cr:#Pour chaque ligne du fichier CSV
+    for service in row: #On récupère les services à chaque ligne du fichier CSV
+        isRunning = os.system('service ' +service+ ' status'); #On vérifie son statut
+        if isRunning = 0:
+            info[service]= 'Actif'
+        else: #Code 768 signifie qu'il est arrêté, mais si le code est différent cela veut dire que le service n'existe pas, donc il est inactif
+            info[service]= 'Inactif'
+        
+    
+
 print (info)#affichage des informations listés
 
-url = "http://192.168.3.25:8082"
-r = requests.post(url, data = info) #192.168.3.25  8011  https://serveur.requestcatcher.com
+url = "http://192.168.3.25:8097"
+info = json.dumps(info)
+#r = requests.post(url, data = info) #192.168.3.25  8011  https://serveur.requestcatcher.com

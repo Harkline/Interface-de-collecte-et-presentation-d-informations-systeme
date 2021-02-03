@@ -1,0 +1,217 @@
+Le projet doit contenir 3 parties principales:
+
+	-Un agent, qui tournera sur le pc de l'hôte et qui récupèrera toutes les données nécessaires de l'ordinateur (nom de l'hôte, noyau linux). Ce même agent devra envoyer les données récupérées à un serveur (protocole http, format de donnée libre). L'agent disposera d'un fichier de configuration où des noms de services sont indiqués, il faudra qu'il vérifie si ces services sont actifs ou non.
+	-Une base de donnée, qui stockera les données de l'hôte.
+	-Un serveur, permettant de faire le lien entre les différentes parties. Il reçoit les données de l'agent et c'est lui qui les stockera dans la base de donnée. Il assurera l'affichage des informations recueillis sur une page web.
+
+Les agents tourneront que sur des ordinateurs ayant comme système d'exploitation un Linux.
+
+Tous les aspects concernant la sécurité (Authentification, SSL) ne seront pas traités.  
+
+Nous nous sommes mis d'accord pour utiliser GitHub comme gestionnaire de version, nous programmerons en français exclusivement en suivant la notation "camelCase".
+
+Nous listons ensuite les différentes fonctionnalités nécessaires afin de répondre au besoin:
+
+Fonctionnalité n°1: 
+
+-But :Récupérer les informations du système
+-Personne responsable: Yanis
+-Etapes:
+-Modules:platform,socket, psutil, [subprocess]
+-exemple de code:
+
+def getSystemInfo():
+	info={}
+        info['platform']=platform.system()
+        info['platform-release']=platform.release()
+        info['platform-version']=platform.version()
+        info['architecture']=platform.machine()
+        info['hostname']=socket.gethostname()
+        info['ip-address']=socket.gethostbyname(socket.gethostname())
+        info['mac-address']=':'.join(re.findall('..', '%012x' % uuid.getnode()))
+        info['processor']=platform.processor()
+        info['ram']=str(round(psutil.virtual_memory().total / (1024.0 **3)))+" GB"
+
+Nous pouvons aussi utiliser des commandes bash (pour récupérer certaies données) via python à l'aide du module subprocess:
+
+process = subprocess.Popen(['ls', '-l'],
+                     stdout=subprocess.PIPE, 
+                     stderr=subprocess.PIPE)
+stdout, stderr = process.communicate()
+
+-------------------------------------------------------------------------
+
+Fonctionnalité n°2:
+
+-But : Envoyer les informations du système de l'agent au serveur 
+-Personne responsable: Yanis
+-Etapes: 
+-Modules: requests
+-exemple de code:
+
+data = {"first_name":"Richard", "second_name":"Stallman"}
+r = requests.post("http://127.0.0.1/index.html", data = data)
+
+-------------------------------------------------------------------------
+
+Fonctionnalité n°3:
+-But : Récupérer les noms des services dans le fichier de configuration
+-Personne responsable: Yanis
+-Etapes:
+-Modules: 
+-exemple de code:
+
+#Mode lecture
+f = open("etudiants.txt", "r", encoding = 'utf-8')
+#Traitements
+f.read()
+..........
+#Ferme le fichier
+f.close()
+
+-------------------------------------------------------------------------
+
+Fonctionnalité n°4:
+-But :Valider qu'un service est bien actif 
+-Personne responsable: Yanis
+-Etapes:
+-Modules:psutil
+-exemple de code:
+
+for p in psutil.process_iter():
+	if 'apache2' in p.name() or 'apache2' in ' '.join(p.cmdline()):
+		print("apache2 is started !")
+
+-------------------------------------------------------------------------
+
+Fonctionalité n°5:
+- lien :https://blog.anvileight.com/posts/simple-python-http-server/
+- But: Créer un serveur web
+- Personne responsable : Olimalt	
+- Etapes :
+- Modules :http.server
+- Exemple de code :
+
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+
+class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
+
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'Hello, world!')
+
+
+httpd = HTTPServer(('localhost', 8000), SimpleHTTPRequestHandler)
+httpd.serve_forever()
+
+-------------------------------------------------------------------------
+
+Fonctionnalité n°6:
+-But : S'assurer que l'affichage de la page web est "correcte" (pour différent tailles d'écran)
+-Personne responsable: Olimalt
+-Etapes:
+-Modules: Bootstrap
+-exemple de code: 
+
+// Smartphones en mode paysage
+@media (min-width: 576px) {
+  .container {
+    max-width: 540px;
+  }
+}
+// Tablettes
+@media (min-width: 768px) {
+  .container {
+    max-width: 720px;
+  }
+}
+// Grand écran
+@media (min-width: 992px) {
+  .container {
+    max-width: 960px;
+  }
+}
+// Très grand écran
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1140px;
+  }
+}
+
+-------------------------------------------------------------------------
+
+Fonctionalité n°7:
+- lien : https://python.doctor/page-database-data-base-donnees-query-sql-mysql-postgre-sqlite
+- But: Création d'une base de donnée sqlite, connexion, insertion de données
+- Personne responsable : Olimalt	
+- Etapes :
+- Modules :sqlite3
+- Exemple de code :
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import sqlite3
+
+#Créer une base de données avec SQLite 
+conn = sqlite3.connect('ma_base.db')
+
+#Fermer la connection à la base
+
+
+#Créer une table avec SQLite
+cursor = conn.cursor()
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS users(
+     id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+     name TEXT,
+     age INTERGER
+)
+""")
+conn.commit() 
+
+
+#Insérer des données  
+cursor.execute("""
+INSERT INTO users(name, age) VALUES(?, ?)""", ("olivier", 30))
+
+#Vous pouvez passer par un dictionnaire: 
+data = {"name" : "olivier", "age" : 30}
+cursor.execute("""
+INSERT INTO users(name, age) VALUES(:name, :age)""", data)
+
+#Récupérer des données 
+cursor.execute("""SELECT name, age FROM users""")
+user1 = cursor.fetchone()
+print(user1)
+
+#Supprimer une table avec SQLite:
+cursor = conn.cursor()
+cursor.execute("""
+DROP TABLE users
+""")
+conn.commit()
+
+conn.close()
+
+-------------------------------------------------------------------------
+
+Fonctionnalité n°8:
+-But : Afficher et mettre en forme les informations stockés dans la base de donnée (page web)
+-Personne responsable:Olimalt
+-Etapes:
+-Modules: Google charts/bootstrap
+-exemple de code:
+
+-------------------------------------------------------------------------
+
+Fonctionnalité n°9:
+-But : Proposer le choix de l'hôte (sur l'interface graphique)
+-Personne responsable:Olimalt
+-Etapes:
+-Modules: html/javascript
+-exemple de code:
+
+
+Schéma des échanges inter-modulaires (fichier à part)

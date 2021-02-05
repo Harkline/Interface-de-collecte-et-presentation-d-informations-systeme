@@ -77,15 +77,19 @@ info['memoireBuffer'] = memoireVirtuel.buffers #7 buffers, 8 cache (mémoire) EN
 info['memoireCache'] = memoireVirtuel.cached
 
 ######CSV reader
+servicesliste = []
+serviceActifInactif = {}
 fichierCSV = csv.reader(open("config.csv","r"))
 for ligne in fichierCSV:#Pour chaque ligne du fichier CSV
     for service in ligne: #On récupère les services à chaque ligne du fichier CSV
         estEnMarche = os.system('service ' +service+ ' status'); #On vérifie son statut
         if estEnMarche == 0:
-            info[service] = 'Actif'
+            serviceActifInactif[service] = 'Actif'
         else: #Code 768 signifie qu'il est arrêté, mais si le code est différent cela veut dire que le service n'existe pas, donc il est inactif
-            info[service] = 'Inactif'
-        
+            serviceActifInactif[service] = 'Inactif'
+
+servicesliste.append(serviceActifInactif)
+info["Services"] = servicesliste  
     
 #Debug
 print (info)#affichage des informations listés

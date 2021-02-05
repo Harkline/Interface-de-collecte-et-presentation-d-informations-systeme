@@ -4,7 +4,7 @@ Tâches (fait = [x] , à faire = [ ]):
 
 Agent:
 - [x] Récupérer les caractéristiques suivantes : le nom de l'host, l'os, l'uptime, le noyau Linux
-- [ ] Récupérer le type et la fréquence du CPU (ou des CPUs)
+- [x] Récupérer le type et la fréquence du CPU (ou des CPUs)
 - [x] Récupérer les métriques suivantes : informations sur l'espace disques de chaque partitions, la charge CPU, la mémoire (totale, libre, occupée -dont buffers/cache)
 - [x] Vérifier qu'un ou plusieurs service(s) tourne(nt) sur la machine par l'intermédiaire d'un fichier de configuration
 - [ ] [OPTIONNEL] Collecter également les taux de transferts réseaux, par interface

@@ -11,7 +11,6 @@ def octetsAGigaoctets(bytes):
 #Structure principal ou toutes les informations sont stockés
 info={}
 
-
 ################################################Caractéristiques########################################################################
 info['nomHote']=socket.gethostname() #Nom de l'hôte 
 info['platforme']=platform.system() #Système d'exploitation
@@ -79,13 +78,17 @@ info['memoireCache'] = memoireVirtuel.cached
 ######Services (CSV reader)
 servicesliste = []
 serviceActifInactif = {}
-fichierCSV = csv.reader(open("config.csv","r"))
-for ligne in fichierCSV:#Pour chaque ligne du fichier CSV
-    for service in ligne: #On récupère les services à chaque ligne du fichier CSV
+nomFichier = "config.csv"
+#On ouvre le fichier en mode lecture seule "r"
+fichierCSV = csv.reader(open(nomFichier,"r"))
+#Pour chaque ligne du fichier CSV
+for ligne in fichierCSV:
+    #On récupère les services à chaque ligne du fichier CSV
+    for service in ligne: 
 
         #On vérifie son statut (en cachant le résultat de la commande dans le terminal)
-        with open(os.devnull, 'wb') as hide_output:
-            estEnMarche = subprocess.Popen(['service', service, 'status'], stdout=hide_output, stderr=hide_output).wait() 
+        with open(os.devnull, 'wb') as cacheSortie:
+            estEnMarche = subprocess.Popen(['service', service, 'status'], stdout=cacheSortie, stderr=cacheSortie).wait()
 
         if estEnMarche == 0:
             serviceActifInactif[service] = 'Actif'
@@ -95,18 +98,18 @@ for ligne in fichierCSV:#Pour chaque ligne du fichier CSV
 
 servicesliste.append(serviceActifInactif)
 info["Services"] = servicesliste
-    
-#Debug
-print (info)#affichage des informations listés
 
 #testYL
-#Pour obtenir le nombre de lectures/écritures depuis le démarrage de la machine
-#disqueEcritureLecture = psutil.disk_io_counters() #perdisk=True
-#print (disqueEcritureLecture)
+######Nombre Lectures/Ecritures
+#Obtient le nombre de lectures/écritures disque pour l'ensemble des boucle (/dev/loop(numéro)) l'ensemble des partitions du/des disques (exemple : /dev/sda(numéro)) et tous les appareils montés (exemple clef USB : /dev/sdf(numéro)
 
-#print(f"[+] Total Read since boot :" + str(disqueEcritureLecture.read_count))
-#print(f"[+] Total Write sice boot :" + str(disqueEcritureLecture.write_count))
+disqueEcritureLecture = psutil.disk_io_counters()
 
+info['lectureDisques'] = disqueEcritureLecture.read_count
+info['ecritureDisques'] = disqueEcritureLecture.write_count
+
+#Debug
+print (info)#affichage des informations listés
 
 ################################################Envoie de données (POST)########################################################
 port = "8097"

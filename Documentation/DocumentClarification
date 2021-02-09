@@ -1,90 +1,117 @@
-Le projet doit contenir 3 parties principales:
+Le projet doit contenir 4 parties principales:
 
 	-Un agent, qui tournera sur le pc de l'hôte et qui récupèrera toutes les données nécessaires de l'ordinateur (nom de l'hôte, noyau linux). Ce même agent devra envoyer les données récupérées à un serveur (protocole http, format de donnée libre). L'agent disposera d'un fichier de configuration où des noms de services sont indiqués, il faudra qu'il vérifie si ces services sont actifs ou non.
 	-Une base de donnée, qui stockera les données de l'hôte.
 	-Un serveur, permettant de faire le lien entre les différentes parties. Il reçoit les données de l'agent et c'est lui qui les stockera dans la base de donnée. Il assurera l'affichage des informations recueillis sur une page web.
+	-Une interface graphique, qui est en réalité une simple page web qui utilisera Google Charts pour les graphiques.
 
 Les agents tourneront que sur des ordinateurs ayant comme système d'exploitation un Linux.
 
 Tous les aspects concernant la sécurité (Authentification, SSL) ne seront pas traités.  
 
-Nous nous sommes mis d'accord pour utiliser GitHub comme gestionnaire de version, nous programmerons en français exclusivement en suivant la notation "camelCase".
+Nous nous sommes mis d'accord pour utiliser GitHub comme gestionnaire de version.
 
 Nous listons ensuite les différentes fonctionnalités nécessaires afin de répondre au besoin:
 
 Fonctionnalité n°1: 
-
+-fichier : agent.py
 -But :Récupérer les informations du système
 -Personne responsable: Yanis
 -Etapes:
--Modules:platform,socket, psutil, [subprocess]
+	-Récupérer l'information (psutil, éxecution de commande terminal avec subprocess ou en regardant dans le système de fichier Linux, car tout est fichier).
+	-Traiter les informations obtenu pour une meilleur visibilité ou compréhension
+	-Inclure l'information voulu dans le dictionnaire qui sera par la suite envoyé au serveur
+-Modules: psutil, subprocess
 -exemple de code:
 
-def getSystemInfo():
-	info={}
-        info['platform']=platform.system()
-        info['platform-release']=platform.release()
-        info['platform-version']=platform.version()
-        info['architecture']=platform.machine()
-        info['hostname']=socket.gethostname()
-        info['ip-address']=socket.gethostbyname(socket.gethostname())
-        info['mac-address']=':'.join(re.findall('..', '%012x' % uuid.getnode()))
-        info['processor']=platform.processor()
-        info['ram']=str(round(psutil.virtual_memory().total / (1024.0 **3)))+" GB"
+#Structure principal ou toutes les informations sont stockés
+info={}
 
-Nous pouvons aussi utiliser des commandes bash (pour récupérer certaies données) via python à l'aide du module subprocess:
+#Exemple de récupération d'une information
+with open("/proc/cpuinfo", "r") as f:
+    infoFichier = f.readlines()
+#Exemple de traitement	
+tempsActif = int(float(tempsActif))
+tempsActifHeures = tempsActif // 3600
+tempsActifMinutes = (tempsActif % 3600) // 60
+#Ajout dans le dictionnaire qui sera envoyé au serveur via méthode POST
+info['tempsActif'] = str(tempsActifHeures) + ":" + str(tempsActifMinutes) + " heures" #temps d'activité (uptime)
 
-process = subprocess.Popen(['ls', '-l'],
-                     stdout=subprocess.PIPE, 
-                     stderr=subprocess.PIPE)
-stdout, stderr = process.communicate()
+################################################Caractéristiques########################################################################
+#Note, certaines informations n'ont pas besoin d'être traités.
+info['nomHote']=socket.gethostname() #Nom de l'hôte 
+info['platforme']=platform.system()
+
 
 -------------------------------------------------------------------------
 
 Fonctionnalité n°2:
-
+-fichier : agent.py
 -But : Envoyer les informations du système de l'agent au serveur 
 -Personne responsable: Yanis
--Etapes: 
+-Etapes:
+	-préparation de la requête en créant des variables
+	-éxécution de la requête
 -Modules: requests
 -exemple de code:
 
-data = {"first_name":"Richard", "second_name":"Stallman"}
-r = requests.post("http://127.0.0.1/index.html", data = data)
+port = "8097"
+url = "http://192.168.3.25:"+port
+
+r = requests.post(url, data = info) #192.168.3.25  8097
 
 -------------------------------------------------------------------------
-
 Fonctionnalité n°3:
--But : Récupérer les noms des services dans le fichier de configuration
+-fichier : agent.py
+-But : Formater les données en format JSON
 -Personne responsable: Yanis
 -Etapes:
--Modules: 
+	-formater les données en format JSON
+-Modules: json
 -exemple de code:
 
-#Mode lecture
-f = open("etudiants.txt", "r", encoding = 'utf-8')
-#Traitements
-f.read()
-..........
-#Ferme le fichier
-f.close()
+info = json.dumps(info)
 
 -------------------------------------------------------------------------
 
 Fonctionnalité n°4:
--But :Valider qu'un service est bien actif 
+-fichier : agent.py
+-But : Récupérer les noms des services dans le fichier de configuration (csv)
 -Personne responsable: Yanis
 -Etapes:
--Modules:psutil
+	-Ouverture du fichier csv en mode lectureSeule
+	-Récupération des données(services) de la sortie de la commande précédente
+-Modules: csv
 -exemple de code:
 
-for p in psutil.process_iter():
-	if 'apache2' in p.name() or 'apache2' in ' '.join(p.cmdline()):
-		print("apache2 is started !")
+fichierCSV = csv.reader(open("config.csv","r"))
+for ligne in fichierCSV:#Pour chaque ligne du fichier CSV
+    for service in ligne: #On récupère les services à chaque ligne du fichier CSV
+
+
 
 -------------------------------------------------------------------------
 
-Fonctionalité n°5:
+Fonctionnalité n°5:
+-But :Valider qu'un service est bien actif 
+-fichier : agent.py
+-Personne responsable: Yanis
+-Etapes:
+-Modules: os, subprocess
+-exemple de code:
+
+#On vérifie son statut (en cachant le résultat de la commande dans le terminal)
+with open(os.devnull, 'wb') as cacheSortie:
+    estEnMarche = subprocess.Popen(['service', service, 'status'], stdout=cacheSortie, stderr=cacheSortie).wait()
+
+if estEnMarche == 0:
+    #Actif
+else:
+    #Inactif
+
+-------------------------------------------------------------------------
+
+Fonctionalité n°6:
 - lien :https://blog.anvileight.com/posts/simple-python-http-server/
 - But: Créer un serveur web
 - Personne responsable : Olimalt	
@@ -108,7 +135,7 @@ httpd.serve_forever()
 
 -------------------------------------------------------------------------
 
-Fonctionnalité n°6:
+Fonctionnalité n°7:
 -But : S'assurer que l'affichage de la page web est "correcte" (pour différent tailles d'écran)
 -Personne responsable: Olimalt
 -Etapes:
@@ -142,7 +169,7 @@ Fonctionnalité n°6:
 
 -------------------------------------------------------------------------
 
-Fonctionalité n°7:
+Fonctionalité n°8:
 - lien : https://python.doctor/page-database-data-base-donnees-query-sql-mysql-postgre-sqlite
 - But: Création d'une base de donnée sqlite, connexion, insertion de données
 - Personne responsable : Olimalt	
@@ -197,7 +224,7 @@ conn.close()
 
 -------------------------------------------------------------------------
 
-Fonctionnalité n°8:
+Fonctionnalité n°9:
 -But : Afficher et mettre en forme les informations stockés dans la base de donnée (page web)
 -Personne responsable:Olimalt
 -Etapes:
@@ -206,7 +233,7 @@ Fonctionnalité n°8:
 
 -------------------------------------------------------------------------
 
-Fonctionnalité n°9:
+Fonctionnalité n°10:
 -But : Proposer le choix de l'hôte (sur l'interface graphique)
 -Personne responsable:Olimalt
 -Etapes:
@@ -214,4 +241,18 @@ Fonctionnalité n°9:
 -exemple de code:
 
 
-Schéma des échanges inter-modulaires (fichier à part)
+Schéma des échanges inter-modulaires
+
+
+-------------------------------------------------------------------------
+
+Amélioration possible PS: 
+disqueEcritureLecture = psutil.disk_io_counters(perdisk=True) #perdisk=True
+#print (disqueEcritureLecture)
+
+for clef in disqueEcritureLecture:
+    #print (clef) #loop1,sda1,sf1 [Boucle, disque(partition), clef USB]
+    #print (disqueEcritureLecture[clef]) [Affiche les valeurs associées]
+    if clef == "dev/sda1":
+        print (disqueEcritureLecture[clef])
+	

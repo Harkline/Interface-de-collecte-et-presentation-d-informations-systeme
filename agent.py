@@ -1,8 +1,8 @@
 #coding utf-8
 
-import platform,socket,psutil,requests,json,csv,os
+import platform,socket,psutil,requests,json,csv,os,subprocess
 
-# Converti octets en Gigaoctets
+# Conversion octets en Gigaoctets
 def octetsAGigaoctets(bytes):
     go = bytes/(1024*1024*1024)
     go = round(go, 2)
@@ -61,7 +61,7 @@ for partition in partitionsDisque:
     tamponInfoPartition[usagePartitionStr] = psutil.disk_usage(partition.mountpoint)
     informationDisque.append(tamponInfoPartition)
 
-info['informationsPartitions'] = informationDisque #Les informations des partitions (ATTENTION : PB potentiel pour OLIMALT pour gérer mes informations)
+info['informationsPartitions'] = informationDisque #Les informations des partitions
 info['chargeCPU'] = psutil.cpu_percent() #En pourcentage
 
 
@@ -76,27 +76,41 @@ info['memoireOccupée']= memoireVirtuel.used
 info['memoireBuffer'] = memoireVirtuel.buffers #7 buffers, 8 cache (mémoire) EN BYTES PENSER A CONVERTIR
 info['memoireCache'] = memoireVirtuel.cached
 
-######CSV reader
+######Services (CSV reader)
 servicesliste = []
 serviceActifInactif = {}
 fichierCSV = csv.reader(open("config.csv","r"))
 for ligne in fichierCSV:#Pour chaque ligne du fichier CSV
     for service in ligne: #On récupère les services à chaque ligne du fichier CSV
-        estEnMarche = os.system('service ' +service+ ' status'); #On vérifie son statut
+
+        #On vérifie son statut (en cachant le résultat de la commande dans le terminal)
+        with open(os.devnull, 'wb') as hide_output:
+            estEnMarche = subprocess.Popen(['service', service, 'status'], stdout=hide_output, stderr=hide_output).wait() 
+
         if estEnMarche == 0:
             serviceActifInactif[service] = 'Actif'
-        else: #Code 768 signifie qu'il est arrêté, mais si le code est différent cela veut dire que le service n'existe pas, donc il est inactif
+        #Code 768 signifie qu'il est arrêté, mais si le code est différent cela veut dire que le service n'existe pas, donc il est inactif
+        else:
             serviceActifInactif[service] = 'Inactif'
 
 servicesliste.append(serviceActifInactif)
-info["Services"] = servicesliste  
+info["Services"] = servicesliste
     
 #Debug
 print (info)#affichage des informations listés
 
+#testYL
+#Pour obtenir le nombre de lectures/écritures depuis le démarrage de la machine
+#disqueEcritureLecture = psutil.disk_io_counters() #perdisk=True
+#print (disqueEcritureLecture)
+
+#print(f"[+] Total Read since boot :" + str(disqueEcritureLecture.read_count))
+#print(f"[+] Total Write sice boot :" + str(disqueEcritureLecture.write_count))
+
 
 ################################################Envoie de données (POST)########################################################
-url = "http://192.168.3.25:8097"
-info = json.dumps(info)
-#r = requests.post(url, data = info) #192.168.3.25  8011  https://serveur.requestcatcher.com
+port = "8097"
+url = "http://192.168.3.25:"+port
 
+info = json.dumps(info)
+#r = requests.post(url, data = info) #192.168.3.25  8097

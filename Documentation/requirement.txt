@@ -1,0 +1,12 @@
+Les modules nécessaires à l'agent sont les suivants :
+
+- platform,
+- socket,
+- psutil,
+- requests,
+- json,
+- csv,
+- os
+
+Les modules nécessaires au serveur sont les suivants :
+

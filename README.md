@@ -8,7 +8,7 @@ Agent:
 - [x] Récupérer les métriques suivantes : informations sur l'espace disques de chaque partitions, la charge CPU, la mémoire (totale, libre, occupée -dont buffers/cache)
 - [x] Vérifier qu'un ou plusieurs service(s) tourne(nt) sur la machine par l'intermédiaire d'un fichier de configuration
 - [ ] [OPTIONNEL] Collecter également les taux de transferts réseaux, par interface
-- [ ] [OPTIONNEL] Collecter les nombres de lectures/écritures disques
+- [x] [OPTIONNEL] Collecter les nombres de lectures/écritures disques [ ! Récupère pour les boucles, toutes les partitions de tous les disques et toutes appareils branchés exemple : clefs USB]
 - [x] Envoyer les données de l'agent au serveur
 - [x] Formater les données envoyé de l'agent au serveur
 

@@ -10,3 +10,7 @@ Les modules nécessaires à l'agent sont les suivants :
 
 Les modules nécessaires au serveur sont les suivants :
 
+- gviz_api    (pour les google charts)
+- sqlite3     (notre bdd)
+- json        (le format de nos transfert de données)
+- http.server (gestion de serveurs avec des ports définis)

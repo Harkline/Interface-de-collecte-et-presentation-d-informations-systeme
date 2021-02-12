@@ -112,8 +112,8 @@ info['ecritureDisques'] = disqueEcritureLecture.write_count
 print (info)#affichage des informations listés
 
 ################################################Envoie de données (POST)########################################################
-port = "8097"
-url = "http://192.168.3.25:"+port
+port = "8001"
+url = "http://192.168.1.101:"+port
 
 info = json.dumps(info)
 #r = requests.post(url, data = info) #192.168.3.25  8097

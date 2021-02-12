@@ -49,14 +49,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
  # 'memoireCache': 2407759872,
  # 'Services': [{'apache2': 'Actif', 'ssh': 'Inactif'}]}
         
-        print('L hote existe !',hote_exists[0])
-        if(hote_exists[0]==1 or hote_exists[0]== None):
+        #print('L hote :',hote_exists[0])
+        if(hote_exists!=None):
             cursor.execute('SELECT id_hote,nom_hote FROM T_HOTE WHERE nom_hote="%s"' % nom_dhote)
             id_hote = cursor.fetchone()
-            print('L hote existe !',hote_exists[0],id_hote[0],id_hote[1])
-        if(hote_exists[0]!=1 and hote_exists[0]!= None ) :
+            #print('L hote existe !',hote_exists[0],id_hote[0],id_hote[1])
+        else :
             cursor.execute('INSERT INTO T_HOTE(nom_hote) VALUES("%s")' % nom_dhote)
-
+            conn.commit()
             cursor.execute('SELECT id_hote FROM T_HOTE WHERE nom_hote="%s"' % nom_dhote)
             id_hote = cursor.fetchone()
             print('id_hote:',id_hote)
@@ -64,26 +64,26 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             print('id:',id_hote)
             cursor.execute("""INSERT INTO T_SYSTEM(id_hote,plateforme_system,tempsactif_system,noyau_system) VALUES(?,?,?,?)""",
                            (id_hote,message['platforme'],message['tempsActif'],message['noyau']))
-            
+            conn.commit()
             cursor.execute("""INSERT INTO T_MEMOIRE(id_hote,total_memoire,free_memoire,used_memoire,buffer_memoire,cache_memoire) VALUES(?,?,?,?,?,?)""",
                            (id_hote,message['memoireTotal'],message['memoireFree'],message['memoireOccupée'],message['memoireBuffer'],message['memoireCache']))
-            
+            conn.commit()
             cursor.execute("""INSERT INTO T_CHARGE_CPU(id_hote,charge_cpu) VALUES(?,?)""",
                            (id_hote,message['chargeCPU']))
-            
+            conn.commit()
             
             for services in message['Services']:
                 for noms in services:
                     print(noms,services[noms])
                     cursor.execute("""INSERT INTO T_SERVICES(id_hote,nom_service,etat_service) VALUES(?,?,?)""",
                            (id_hote,noms,services[noms]))
-
+                    conn.commit()
                 
                 
                 
             cursor.execute("""INSERT INTO T_PROCESSEUR(id_hote,nom_processeur,max_processeur,min_processeur,actuel_processeur) VALUES(?,?,?,?,?)""",
                            (id_hote,message['Processeur0'][0],message['Processeur0'][1],message['Processeur0'][2],message['Processeur0'][3]))
-                
+            conn.commit()    
             for i in message['informationsPartitions']: #Dans les partitions
             
                 for ii in message['informationsPartitions'][iii]:
@@ -104,7 +104,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 cursor.execute("""
                                        INSERT INTO T_PARTITION(id_hote,numero_partition,total_partition,used_partition,free_partition,percent_partition)
                                        VALUES(?,?,?,?,?,?)""", (id_hote,iii,total,used,free,percent))
-            conn.commit()
+                conn.commit()
             
         
         #for i in message['informationsPartitions']:
@@ -116,6 +116,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
              #    print ('ii :',ii)
                  
         self.send_response(200)
+        self.end_headers()
         
     def do_GET(self):
         if self.path=="/index.html":
@@ -172,7 +173,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                    
                             );
                            """)
-                           
+                          
             cursor.execute("""
                            CREATE TABLE IF NOT EXISTS T_SYSTEM(
                                    id_hote INTEGER ,
@@ -199,6 +200,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                    
                             );
                            """)
+                            
             cursor.execute("""
                            CREATE TABLE IF NOT EXISTS T_PROCESSEUR(
                                    id_hote INTEGER ,
@@ -275,10 +277,15 @@ def main(): # cette methode me retourne ma page web avec mon js appliqué
                  
   
   """)
-  user1 = cursor.fetchone()
-  user2 = cursor.fetchone()
-  user3 = cursor.fetchone()
-  print(user1,user2 ,user3)
+  cursor.execute("""SELECT * 
+                 FROM T_HOTE
+                     ;
+                 
+  
+  """)
+    
+  users = cursor.fetchall()
+  print(users)
   
   # fin de la partie sql
   
@@ -311,7 +318,7 @@ def main(): # cette methode me retourne ma page web avec mon js appliqué
 
 if __name__ == '__main__':
   
-  httpd = HTTPServer(('192.168.1.101', 8001), SimpleHTTPRequestHandler) #penser à mettre l'adresse ip au lieu de localhost
+  httpd = HTTPServer(('192.168.1.101', 8003), SimpleHTTPRequestHandler) #penser à mettre l'adresse ip au lieu de localhost
                                                                         #car pas accès depuis l'extèrieur
   httpd.serve_forever()
 

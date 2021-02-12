@@ -8,6 +8,9 @@ import json
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
+ip ='192.168.1.101'
+port =8003
+
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         conn = sqlite3.connect('ma_base2.db')
@@ -124,8 +127,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.send_header('Location','http://www.example.com')
             self.end_headers()
         elif self.path=="/stop":
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(bytes("<html><head><title>Fermeture du serveur</title></head><body>Vous venez d eteindre le serveur.</body></html>","utf-8")) 
             httpd.server_close()
         elif self.path=="/createdb":
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(bytes("<html><head><title>CREATE DB</title></head><body>Vous venez de creer la base de donnee si elle n existait pas.</body></html>","utf-8")) 
             conn = sqlite3.connect('ma_base2.db')
 
 #Fermer la connection à la base
@@ -242,6 +251,11 @@ page_template = """
     }
   </script>
   <body>
+  
+    <p><a href="/createdb">Create Database</a> |
+    <a href="/stop">Stop Server</a></p>
+
+    <p>Pour creer la base de donnee : /createdb       Pour fermer le serveur: /stop </p>  
     <H1>Table created using ToJSCode</H1>
     <div id="table_div_jscode"></div>
     <H1>Table created using ToJSon</H1>
@@ -317,8 +331,8 @@ def main(): # cette methode me retourne ma page web avec mon js appliqué
   
 
 if __name__ == '__main__':
-  
-  httpd = HTTPServer(('192.168.1.101', 8003), SimpleHTTPRequestHandler) #penser à mettre l'adresse ip au lieu de localhost
+
+  httpd = HTTPServer((ip, port), SimpleHTTPRequestHandler) #penser à mettre l'adresse ip au lieu de localhost
                                                                         #car pas accès depuis l'extèrieur
   httpd.serve_forever()
 

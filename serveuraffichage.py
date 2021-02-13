@@ -5,6 +5,7 @@
 import gviz_api
 import sqlite3
 import json
+from pygooglechart import *
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
@@ -52,11 +53,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
  # 'memoireCache': 2407759872,
  # 'Services': [{'apache2': 'Actif', 'ssh': 'Inactif'}]}
         
-        #print('L hote :',hote_exists[0])
-        if(hote_exists!=None):
+        print('L hote :',hote_exists[0])
+        
+        if(hote_exists[0] != 0):
             cursor.execute('SELECT id_hote,nom_hote FROM T_HOTE WHERE nom_hote="%s"' % nom_dhote)
             id_hote = cursor.fetchone()
-            #print('L hote existe !',hote_exists[0],id_hote[0],id_hote[1])
+            print('L hote existe !',id_hote)
         else :
             cursor.execute('INSERT INTO T_HOTE(nom_hote) VALUES("%s")' % nom_dhote)
             conn.commit()
@@ -250,13 +252,35 @@ page_template = """
 
     google.charts.setOnLoadCallback(drawTable);
     function drawTable() {
-      %(jscode)s
-      var jscode_table = new google.visualization.Table(document.getElementById('table_div_jscode'));
-      jscode_table.draw(jscode_data, {showRowNumber: true});
+      %(jscode1)s
+      %(jscode2)s
+      %(jscode3)s
+      %(jscode4)s
+      %(jscode5)s
+      %(jscode6)s
+      %(jscode7)s
+      var jscode_table_hote = new google.visualization.Table(document.getElementById('table_div_jscode_hote'));
+      jscode_table_hote.draw(jscode_data_hote, {showRowNumber: true});
+      
+      var jscode_table_memoire = new google.visualization.Table(document.getElementById('table_div_jscode_memoire'));
+      jscode_table_memoire.draw(jscode_data_memoire, {showRowNumber: true});
+      
+      var jscode_table_charge_cpu = new google.visualization.Table(document.getElementById('table_div_jscode_charge_cpu'));
+      jscode_table_charge_cpu.draw(jscode_data_charge_cpu, {showRowNumber: true});
+      
+      var jscode_table_services = new google.visualization.Table(document.getElementById('table_div_jscode_services'));
+      jscode_table_services.draw(jscode_data_services, {showRowNumber: true});
+      
+      var jscode_table_partition = new google.visualization.Table(document.getElementById('table_div_jscode_partition'));
+      jscode_table_partition.draw(jscode_data_partition, {showRowNumber: true});
+      
+      var jscode_table_system = new google.visualization.Table(document.getElementById('table_div_jscode_system'));
+      jscode_table_partition.draw(jscode_data_partition, {showRowNumber: true});
+      
+      var jscode_table_processeur = new google.visualization.Table(document.getElementById('table_div_jscode_processeur'));
+      jscode_table_processeur.draw(jscode_data_processeur, {showRowNumber: true});
 
-      var json_table = new google.visualization.Table(document.getElementById('table_div_json'));
-      var json_data = new google.visualization.DataTable(%(json)s, 0.6);
-      json_table.draw(json_data, {showRowNumber: true});
+
     }
   </script>
   <body>
@@ -266,14 +290,24 @@ page_template = """
 
     <p>Pour creer la base de donnee : /createdb       Pour fermer le serveur: /stop </p>  
     <H1>Table created using ToJSCode</H1>
-    <div id="table_div_jscode"></div>
-    <H1>Table created using ToJSon</H1>
-    <div id="table_div_json"></div>
+    <div id="table_div_jscode_hote"></div>
+    <div id="table_div_jscode_memoire"></div>
+    <div id="table_div_jscode_charge_cpu"></div>
+    <div id="table_div_jscode_services"></div>
+    <div id="table_div_jscode_partition"></div>
+    <div id="table_div_jscode_system"></div>
+    <div id="table_div_jscode_processeur"></div>
+
     <img id="limage" src="images/image.jpeg" />
+    <img id="limage" src="images/image2.jpeg" />
 
   </body>
 </html>
 """
+
+#      var json_table = new google.visualization.Table(document.getElementById('table_div_json'));
+#      var json_data = new google.visualization.DataTable(%(json)s, 0.6);
+#      json_table.draw(json_data, {showRowNumber: true});
 
 def main(): # cette methode me retourne ma page web avec mon js appliqué
   # Creating the data
@@ -302,38 +336,178 @@ def main(): # cette methode me retourne ma page web avec mon js appliqué
                  
   
   """)
+  users = cursor.fetchall()
+  print(users)
   cursor.execute("""SELECT * 
-                 FROM T_HOTE
+                 FROM T_PARTITION
                      ;
                  
   
   """)
     
-  users = cursor.fetchall()
-  print(users)
+  #CREATE TABLE IF NOT EXISTS T_PARTITION(
+        #                           id_hote INTEGER ,
+       #                            
+      #                             numero_partition INT,
+     #                              total_partition BIGINT,
+    #                               used_partition BIGINT,
+   #                                free_partition BIGINT,
+  #                                 percent_partition FLOAT,
+ #                                  FOREIGN KEY(id_hote) REFERENCES T_HOTE(id_hote)
+                                   
+  
+  
+  ###############################HOTES################################
+  cursor.execute("""SELECT * FROM T_HOTE;""")
+  datas = cursor.fetchall()
+  data_dictionnary={}
+  data_list=[]
+  for record in datas:
+      data_dictionnary = {"id" : record[1],"nom" : record[0]}
+      data_list.append(data_dictionnary)
+  description2 = {"id": ("number", "id hote"),
+                 "nom": ("string", "Nom d'hote")}
+  data_table = gviz_api.DataTable(description2)
+  data_table.LoadData(data_list)
+  jscode1 = data_table.ToJSCode("jscode_data_hote",
+                               columns_order=("id","nom"),
+                               order_by="id")
+  
+  ###############################MEMOIRE################################
+  cursor.execute("""SELECT * FROM T_MEMOIRE;""")
+  datas = cursor.fetchall()
+  data_dictionnary={}
+  data_list=[]
+  for record in datas:
+      data_dictionnary = {"id" : record[0],"total_memoire" : record[1], "used_memoire" : record[2], "free_memoire" : record[3], "buffer_memoire" : record[4], "cache_memoire" : record[5]}
+      data_list.append(data_dictionnary)
+  description2 = {"id": ("number", "id hote"),
+                 "total_memoire": ("number", "Memoire Totale"),
+                 "used_memoire": ("number", "Memoire utilisee"),
+                 "free_memoire": ("number", "Memoire libre"),
+                 "buffer_memoire": ("number", "Buffer Memoire"),
+                 "cache_memoire": ("number", "Cache Memoire")}
+  data_table = gviz_api.DataTable(description2)
+  data_table.LoadData(data_list)
+  jscode2 = data_table.ToJSCode("jscode_data_memoire",
+                               columns_order=("id","total_memoire", "used_memoire", "free_memoire","buffer_memoire", "cache_memoire"),
+                               order_by="id")
+ 
+  ###############################CHARGE_CPU################################
+  cursor.execute("""SELECT * FROM T_CHARGE_CPU;""")
+  datas = cursor.fetchall()
+  data_dictionnary={}
+  data_list=[]
+  for record in datas:
+      data_dictionnary = {"id" : record[0],"charge_cpu" : record[1]}
+      data_list.append(data_dictionnary)
+  description2 = {"id": ("number", "id hote"),
+                 "charge_cpu": ("number", "Charge du CPU")}
+  data_table = gviz_api.DataTable(description2)
+  data_table.LoadData(data_list)
+  jscode3 = data_table.ToJSCode("jscode_data_charge_cpu",
+                               columns_order=("id","charge_cpu"),
+                               order_by="id")
+
+  ###############################SERVICES################################
+  cursor.execute("""SELECT * FROM T_SERVICES;""")
+  datas = cursor.fetchall()
+  data_dictionnary={}
+  data_list=[]
+  for record in datas:
+      data_dictionnary = {"id" : record[0],"nom_service" : record[1],"etat_service" : record[2]}
+      data_list.append(data_dictionnary)
+  description2 = {"id": ("number", "id hote"),
+                  "nom_service": ("string", "Nom service"),
+                 "etat_service": ("string", "Etat service")}
+  data_table = gviz_api.DataTable(description2)
+  data_table.LoadData(data_list)
+  jscode4 = data_table.ToJSCode("jscode_data_services",
+                               columns_order=("id","nom_service","etat_service"),
+                               order_by="id")
+
+  ###############################SYSTEM################################
+  cursor.execute("""SELECT * FROM T_SYSTEM;""")
+  datas = cursor.fetchall()
+  data_dictionnary={}
+  data_list=[]
+  for record in datas:
+      data_dictionnary = {"id" : record[0],"plateforme_system" : record[1],"tempsactif_system" : record[2],"noyau_system" : record[3]}
+      data_list.append(data_dictionnary)
+  description2 = {"id": ("number", "id hote"),
+                  "plateforme_system": ("string", "Nom du systeme"),
+                  "tempsactif_system": ("string", "Temps actif"),
+                 "noyau_system": ("string", "Le noyau du systeme")}
+  data_table = gviz_api.DataTable(description2)
+  data_table.LoadData(data_list)
+  jscode5 = data_table.ToJSCode("jscode_data_system",
+                               columns_order=("id","plateforme_system","tempsactif_system","noyau_system"),
+                               order_by="id")
+            
+  ###############################PROCESSEUR################################
+  cursor.execute("""SELECT * FROM T_PROCESSEUR;""")
+  datas = cursor.fetchall()
+  data_dictionnary={}
+  data_list=[]
+  for record in datas:
+      data_dictionnary = {"id" : record[0],"nom_processeur" : record[1], "max_processeur" : record[2], "min_processeur" : record[3], "actuel_processeur" : record[4]}
+      data_list.append(data_dictionnary)
+  description2 = {"id": ("number", "id hote"),
+                 "nom_processeur": ("string", "Nom du processeur"),
+                 "max_processeur": ("number", "Max"),
+                 "min_processeur": ("number", "Min"),
+                 "actuel_processeur": ("number", "Actuellement")}
+  data_table = gviz_api.DataTable(description2)
+  data_table.LoadData(data_list)
+  jscode6 = data_table.ToJSCode("jscode_data_processeur",
+                               columns_order=("id","nom_processeur", "max_processeur", "min_processeur","actuel_processeur"),
+                               order_by="id")
+            
+  ###############################PARTITIONS################################
+  cursor.execute("""SELECT * FROM T_PARTITION;""")
+  datas = cursor.fetchall()
+  data_dictionnary={}
+  data_list=[]
+  for record in datas:
+      data_dictionnary = {"id" : record[0],"numero" : record[1], "total" : record[2], "used" : record[3], "free" : record[4], "percent" : record[5]}
+      data_list.append(data_dictionnary)
+  description2 = {"id": ("number", "id hote"),
+                 "numero": ("number", "Numero de partition"),
+                 "total": ("number", "Size"),
+                 "used": ("number", "Used"),
+                 "free": ("number", "Free"),
+                 "percent": ("number", "Percent")}
+  data_table = gviz_api.DataTable(description2)
+  data_table.LoadData(data_list)
+  jscode7 = data_table.ToJSCode("jscode_data_partition",
+                               columns_order=("id","numero", "total", "used","free", "percent"),
+                               order_by="id")
+    #Create a JSON string.
+  #json = data_table.ToJSon(columns_order=("numero", "total", "used","free", "percent"),
+  #                             order_by="numero")
   
   # fin de la partie sql
   
   # deux exemple de déclaration d'une liste
-  description = {"name": ("string", "Name"),
-                 "salary": ("number", "Salary"),
-                 "full_time": ("boolean", "Full Time Employee")}
-  data = [{"name": "Mike", "salary": (10000, "$10,000"), "full_time": True},
-          {"name": "Jim", "salary": (800, "$800"), "full_time": False},
-          {"name": "Alice", "salary": (12500, "$12,500"), "full_time": True},
-          {"name": "Bob", "salary": (7000, "$7,000"), "full_time": True}]
+#  description = {"name": ("string", "Name"),
+#                 "salary": ("number", "Salary"),
+#                 "full_time": ("boolean", "Full Time Employee")}
+#  data = [{"name": "Mike", "salary": (10000, "$10,000"), "full_time": True},
+#          {"name": "Jim", "salary": (800, "$800"), "full_time": False},
+#          {"name": "Alice", "salary": (12500, "$12,500"), "full_time": True},
+#          {"name": "Bob", "salary": (7000, "$7,000"), "full_time": True}]
 
   # Loading it into gviz_api.DataTable
-  data_table = gviz_api.DataTable(description)
-  data_table.LoadData(data)
+  #data_table = gviz_api.DataTable(description)
+  #data_table.LoadData(data)
 
   # Create a JavaScript code string.
-  jscode = data_table.ToJSCode("jscode_data",
-                               columns_order=("name", "salary", "full_time"),
-                               order_by="salary")
-  # Create a JSON string.
-  json = data_table.ToJSon(columns_order=("name", "salary", "full_time"),
-                           order_by="salary")
+  #jscode = data_table.ToJSCode("jscode_data",
+   #                            columns_order=("name", "salary", "full_time"),
+    #                           order_by="salary")
+  #Create a JSON string.
+  #json = data_table.ToJSon(columns_order=("name", "salary", "full_time"),
+   #                        order_by="salary")
 
   # Put the JS code and JSON string into the template.
   print ("Content-type: text/html")

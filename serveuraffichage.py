@@ -225,10 +225,19 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             conn.commit() 
         else :
             self.send_response(200)
-            self.end_headers()
+            
             print(self.path)
             #self.wfile.write(b'Hello, world!')
             #self.wfile.write(self.path)
+            if self.path.endswith(".jpeg"):
+                f = open("."+self.path, 'rb')
+                self.send_response(200)
+                self.send_header('Content-type',        'image/jpg')
+                self.end_headers()
+                self.wfile.write(f.read())
+                f.close()
+                return
+            self.end_headers()
             self.wfile.write(bytes(main(),"utf-8")) 
 
 
@@ -260,6 +269,8 @@ page_template = """
     <div id="table_div_jscode"></div>
     <H1>Table created using ToJSon</H1>
     <div id="table_div_json"></div>
+    <img id="limage" src="images/image.jpeg" />
+
   </body>
 </html>
 """

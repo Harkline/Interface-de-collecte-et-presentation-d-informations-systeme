@@ -1,3 +1,7 @@
+Instructions d'installation :
+Une fois que vous avez cloner le code, pensez à lancer la création de la base de donnée avec votreip:port/createdb
+Ou utilisez la bdd mise en pièce jointe.
+
 Le projet doit contenir 4 parties principales:
 
 	-Un agent, qui tournera sur le pc de l'hôte et qui récupèrera toutes les données nécessaires de l'ordinateur (nom de l'hôte, noyau linux). Ce même agent devra envoyer les données récupérées à un serveur (protocole http, format de donnée libre). L'agent disposera d'un fichier de configuration où des noms de services sont indiqués, il faudra qu'il vérifie si ces services sont actifs ou non.
@@ -113,9 +117,9 @@ else:
 
 Fonctionalité n°6:
 - lien :https://blog.anvileight.com/posts/simple-python-http-server/
-- But: Créer un serveur web
+- But: Créer un serveur web qui écoute sur un port pour réceptionner les données et un autre qui créée une page 
+web sur un autre port
 - Personne responsable : Olimalt	
-- Etapes :
 - Modules :http.server
 - Exemple de code :
 
@@ -133,49 +137,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 httpd = HTTPServer(('localhost', 8000), SimpleHTTPRequestHandler)
 httpd.serve_forever()
 
--------------------------------------------------------------------------
-
-Fonctionnalité n°7:
--But : S'assurer que l'affichage de la page web est "correcte" (pour différent tailles d'écran)
--Personne responsable: Olimalt
--Etapes:
--Modules: Bootstrap
--exemple de code: 
-
-// Smartphones en mode paysage
-@media (min-width: 576px) {
-  .container {
-    max-width: 540px;
-  }
-}
-// Tablettes
-@media (min-width: 768px) {
-  .container {
-    max-width: 720px;
-  }
-}
-// Grand écran
-@media (min-width: 992px) {
-  .container {
-    max-width: 960px;
-  }
-}
-// Très grand écran
-@media (min-width: 1200px) {
-  .container {
-    max-width: 1140px;
-  }
-}
 
 -------------------------------------------------------------------------
 
-Fonctionalité n°8:
+Fonctionalité n°7:
 - lien : https://python.doctor/page-database-data-base-donnees-query-sql-mysql-postgre-sqlite
 - But: Création d'une base de donnée sqlite, connexion, insertion de données
 - Personne responsable : Olimalt	
-- Etapes :
 - Modules :sqlite3
-- Exemple de code :
+- Exemple de code : -> fichier joint schema_bdd.png
 
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
@@ -224,35 +194,12 @@ conn.close()
 
 -------------------------------------------------------------------------
 
-Fonctionnalité n°9:
+Fonctionnalité n°8:
 -But : Afficher et mettre en forme les informations stockés dans la base de donnée (page web)
 -Personne responsable:Olimalt
--Etapes:
--Modules: Google charts/bootstrap
--exemple de code:
+-Modules: sqlite3 / gviz_api
+-exemple de code: -> fichier joint la_vue.png
 
 -------------------------------------------------------------------------
 
-Fonctionnalité n°10:
--But : Proposer le choix de l'hôte (sur l'interface graphique)
--Personne responsable:Olimalt
--Etapes:
--Modules: html/javascript
--exemple de code:
-
-
-Schéma des échanges inter-modulaires
-
-
--------------------------------------------------------------------------
-
-Amélioration possible PS: 
-disqueEcritureLecture = psutil.disk_io_counters(perdisk=True) #perdisk=True
-#print (disqueEcritureLecture)
-
-for clef in disqueEcritureLecture:
-    #print (clef) #loop1,sda1,sf1 [Boucle, disque(partition), clef USB]
-    #print (disqueEcritureLecture[clef]) [Affiche les valeurs associées]
-    if clef == "dev/sda1":
-        print (disqueEcritureLecture[clef])
 	

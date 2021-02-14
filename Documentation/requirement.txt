@@ -1,12 +1,12 @@
 Les modules nécessaires à l'agent sont les suivants :
 
 - platform,
-- socket,
-- psutil,
-- requests,
-- json,
-- csv,
-- os
+- socket (pour récupérer l'hostname),
+- psutil (pour récupérer la quasi-totalité des informations systèmes),
+- requests (permet de faire une requête POST),
+- json (permet de formater en JSON),
+- csv (permet lire un fichier csv),
+- os (permet de récupérer d'autres informations systèmes)
 
 Les modules nécessaires au serveur sont les suivants :
 

@@ -102,11 +102,12 @@ info["Services"] = servicesliste
 #testYL
 ######Nombre Lectures/Ecritures
 #Obtient le nombre de lectures/écritures disque pour l'ensemble des boucle (/dev/loop(numéro)) l'ensemble des partitions du/des disques (exemple : /dev/sda(numéro)) et tous les appareils montés (exemple clef USB : /dev/sdf(numéro)
+#Marche uniquement avec la dernière version de psutil (5.8.0), pas eu le temps de le traiter dans l'affichage de la page web. 
 
-disqueEcritureLecture = psutil.disk_io_counters()
+#disqueEcritureLecture = psutil.disk_io_counters()
 
-info['lectureDisques'] = disqueEcritureLecture.read_count
-info['ecritureDisques'] = disqueEcritureLecture.write_count
+#info['lectureDisques'] = disqueEcritureLecture.read_count
+#info['ecritureDisques'] = disqueEcritureLecture.write_count
 
 ################################################Envoie de données (POST)########################################################
 port = "8001"

@@ -5,7 +5,6 @@
 import gviz_api
 import sqlite3
 import json
-from pygooglechart import *
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
@@ -20,8 +19,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         message = json.loads(self.rfile.read(length))
         #content_len = int(self.headers.get('Content-Length'))
         #post_body = self.rfile.read(content_len).decode('utf-8')
-        print(message)
-        print('USAGGEEEEE',message['informationsPartitions'][1])
+        #print(message)
+        #print('USAGGEEEEE',message['informationsPartitions'][1])
         iii=0
         nom_dhote=message['nomHote']
         
@@ -53,20 +52,20 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
  # 'memoireCache': 2407759872,
  # 'Services': [{'apache2': 'Actif', 'ssh': 'Inactif'}]}
         
-        print('L hote :',hote_exists[0])
+        #print('L hote :',hote_exists[0])
         
         if(hote_exists[0] != 0):
             cursor.execute('SELECT id_hote,nom_hote FROM T_HOTE WHERE nom_hote="%s"' % nom_dhote)
             id_hote = cursor.fetchone()
-            print('L hote existe !',id_hote)
+            #print('L hote existe !',id_hote)
         else :
             cursor.execute('INSERT INTO T_HOTE(nom_hote) VALUES("%s")' % nom_dhote)
             conn.commit()
             cursor.execute('SELECT id_hote FROM T_HOTE WHERE nom_hote="%s"' % nom_dhote)
             id_hote = cursor.fetchone()
-            print('id_hote:',id_hote)
+            #print('id_hote:',id_hote)
             id_hote=int(id_hote[0])
-            print('id:',id_hote)
+            #print('id:',id_hote)
             cursor.execute("""INSERT INTO T_SYSTEM(id_hote,plateforme_system,tempsactif_system,noyau_system) VALUES(?,?,?,?)""",
                            (id_hote,message['platforme'],message['tempsActif'],message['noyau']))
             conn.commit()
@@ -79,7 +78,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             
             for services in message['Services']:
                 for noms in services:
-                    print(noms,services[noms])
+                    #print(noms,services[noms])
                     cursor.execute("""INSERT INTO T_SERVICES(id_hote,nom_service,etat_service) VALUES(?,?,?)""",
                            (id_hote,noms,services[noms]))
                     conn.commit()
@@ -112,13 +111,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 conn.commit()
             
         
-        #for i in message['informationsPartitions']:
-         #   iii+=1
-          #  parition ="'"+'usagePartition'+str(iii)+"'"
-           # print(parition)
-            #print ('i :',i[parition])
-            #for ii in i[parition.strip('"')]:
-             #    print ('ii :',ii)
                  
         self.send_response(200)
         self.end_headers()
@@ -275,7 +267,7 @@ page_template = """
       jscode_table_partition.draw(jscode_data_partition, {showRowNumber: true});
       
       var jscode_table_system = new google.visualization.Table(document.getElementById('table_div_jscode_system'));
-      jscode_table_partition.draw(jscode_data_partition, {showRowNumber: true});
+      jscode_table_system.draw(jscode_data_system, {showRowNumber: true});
       
       var jscode_table_processeur = new google.visualization.Table(document.getElementById('table_div_jscode_processeur'));
       jscode_table_processeur.draw(jscode_data_processeur, {showRowNumber: true});
@@ -288,19 +280,23 @@ page_template = """
     <p><a href="/createdb">Create Database</a> |
     <a href="/stop">Stop Server</a></p>
 
-    <p>Pour creer la base de donnee : /createdb       Pour fermer le serveur: /stop </p>  
-    <H1>Table created using ToJSCode</H1>
+
+    <H1>Les hotes</H1>
     <div id="table_div_jscode_hote"></div>
+    <H1>Memoires</H1>
     <div id="table_div_jscode_memoire"></div>
+    <H1>Charge CPU</H1>
     <div id="table_div_jscode_charge_cpu"></div>
+    <H1>Services</H1>
     <div id="table_div_jscode_services"></div>
+    <H1>Partitions</H1>
     <div id="table_div_jscode_partition"></div>
+    <H1>Informations systeme</H1>
     <div id="table_div_jscode_system"></div>
+    <H1>Processeurs</H1>
     <div id="table_div_jscode_processeur"></div>
 
-    <img id="limage" src="images/image.jpeg" />
-    <img id="limage" src="images/image2.jpeg" />
-
+   
   </body>
 </html>
 """
@@ -318,44 +314,31 @@ def main(): # cette methode me retourne ma page web avec mon js appliqué
   
   cursor = conn.cursor()
   #cursor.execute("""SELECT name, age FROM users""")
-  cursor.execute("""SELECT * 
-                 FROM T_HOTE
-                 INNER JOIN T_MEMOIRE
-                     on T_HOTE.id_hote = T_MEMOIRE.id_hote
-                 INNER JOIN T_PARTITION
-                     on T_HOTE.id_hote = T_PARTITION.id_hote
-                 INNER JOIN T_SYSTEM
-                     on T_HOTE.id_hote = T_SYSTEM.id_hote
-                 INNER JOIN T_CHARGE_CPU
-                     on T_HOTE.id_hote = T_CHARGE_CPU.id_hote
-                 INNER JOIN T_PROCESSEUR
-                     on T_HOTE.id_hote = T_PROCESSEUR.id_hote
-                 INNER JOIN T_SERVICES
-                     on T_HOTE.id_hote = T_SERVICES.id_hote
-                     ;
+  #cursor.execute("""SELECT * 
+  #              FROM T_HOTE
+  #              INNER JOIN T_MEMOIRE
+  #                   on T_HOTE.id_hote = T_MEMOIRE.id_hote
+  #               INNER JOIN T_PARTITION
+  #                   on T_HOTE.id_hote = T_PARTITION.id_hote
+  #               INNER JOIN T_SYSTEM
+  #                   on T_HOTE.id_hote = T_SYSTEM.id_hote
+  #               INNER JOIN T_CHARGE_CPU
+  #                   on T_HOTE.id_hote = T_CHARGE_CPU.id_hote
+  #               INNER JOIN T_PROCESSEUR
+  #                   on T_HOTE.id_hote = T_PROCESSEUR.id_hote
+  #               INNER JOIN T_SERVICES
+  #                   on T_HOTE.id_hote = T_SERVICES.id_hote
+  #                   ;
                  
   
-  """)
-  users = cursor.fetchall()
-  print(users)
-  cursor.execute("""SELECT * 
-                 FROM T_PARTITION
-                     ;
-                 
-  
-  """)
+  #""")
+  #users = cursor.fetchall()
+  ##print(users)
+  #cursor.execute("""SELECT * 
+  #               FROM T_PARTITION
+  #                   ;
+  #""")
     
-  #CREATE TABLE IF NOT EXISTS T_PARTITION(
-        #                           id_hote INTEGER ,
-       #                            
-      #                             numero_partition INT,
-     #                              total_partition BIGINT,
-    #                               used_partition BIGINT,
-   #                                free_partition BIGINT,
-  #                                 percent_partition FLOAT,
- #                                  FOREIGN KEY(id_hote) REFERENCES T_HOTE(id_hote)
-                                   
-  
   
   ###############################HOTES################################
   cursor.execute("""SELECT * FROM T_HOTE;""")
@@ -482,33 +465,6 @@ def main(): # cette methode me retourne ma page web avec mon js appliqué
   jscode7 = data_table.ToJSCode("jscode_data_partition",
                                columns_order=("id","numero", "total", "used","free", "percent"),
                                order_by="id")
-    #Create a JSON string.
-  #json = data_table.ToJSon(columns_order=("numero", "total", "used","free", "percent"),
-  #                             order_by="numero")
-  
-  # fin de la partie sql
-  
-  # deux exemple de déclaration d'une liste
-#  description = {"name": ("string", "Name"),
-#                 "salary": ("number", "Salary"),
-#                 "full_time": ("boolean", "Full Time Employee")}
-#  data = [{"name": "Mike", "salary": (10000, "$10,000"), "full_time": True},
-#          {"name": "Jim", "salary": (800, "$800"), "full_time": False},
-#          {"name": "Alice", "salary": (12500, "$12,500"), "full_time": True},
-#          {"name": "Bob", "salary": (7000, "$7,000"), "full_time": True}]
-
-  # Loading it into gviz_api.DataTable
-  #data_table = gviz_api.DataTable(description)
-  #data_table.LoadData(data)
-
-  # Create a JavaScript code string.
-  #jscode = data_table.ToJSCode("jscode_data",
-   #                            columns_order=("name", "salary", "full_time"),
-    #                           order_by="salary")
-  #Create a JSON string.
-  #json = data_table.ToJSon(columns_order=("name", "salary", "full_time"),
-   #                        order_by="salary")
-
   # Put the JS code and JSON string into the template.
   print ("Content-type: text/html")
   #print

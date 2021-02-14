@@ -19,7 +19,7 @@ Serveur:
 - [x] Insertion des informations reçus des agents dans la BDD (mysqli)
 - [x] Creation d'une redirection vers une page web sur un port spécifique avec l'implémentation du JS (google charts)  
 - [x] [OPTIONNEL] Gèrer les do_GET pour ajouter quelques fonctionnalitée (supprimer BDD,fermer le site http, voir autres...)
-- [ ] Mise en forme de la page web présentent les informations sur les clients
+- [x] Mise en forme de la page web présentent les informations sur les clients
 - [ ] [OPTIONNEL] Ajouter le choix de l'hôte sur l'interface graphique
 
 Documentation:

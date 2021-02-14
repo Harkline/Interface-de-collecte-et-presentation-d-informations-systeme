@@ -108,12 +108,9 @@ disqueEcritureLecture = psutil.disk_io_counters()
 info['lectureDisques'] = disqueEcritureLecture.read_count
 info['ecritureDisques'] = disqueEcritureLecture.write_count
 
-#Debug
-print (info)#affichage des informations listés
-
 ################################################Envoie de données (POST)########################################################
 port = "8001"
 url = "http://192.168.1.101:"+port
 
 info = json.dumps(info)
-#r = requests.post(url, data = info) #192.168.3.25  8097
+r = requests.post(url, data = info) #192.168.3.25  8097

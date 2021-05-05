@@ -23,6 +23,6 @@ Serveur:
 - [ ] [OPTIONNEL] Ajouter le choix de l'hôte sur l'interface graphique
 
 Documentation:
-- [ ] Indiquer toutes les dépendances du projet dans un fichier requirement.txt
-- [ ] Faire des copies d'écrans de l'interface réalisé
-- [ ] Mise à jour du document de clarification
+- [x] Indiquer toutes les dépendances du projet dans un fichier requirement.txt
+- [x] Faire des copies d'écrans de l'interface réalisé
+- [x] Mise à jour du document de clarification
